@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Contracts\View\View as ViewView;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -12,7 +13,7 @@ class MainController extends Controller
         return view('home');
     }
 
-    public function generateExercises(Request $request)
+    public function generateExercises(Request $request): View
     {
         // form validation
         $request->validate([
@@ -93,12 +94,13 @@ class MainController extends Controller
             }
 
             $exercises[] = [
+                'operation' => $operation,
                 'exercise_number' => $index,
                 'exercise' => $exercise,
                 'solution' => "$exercise $solution"
             ];
         }
-        dd($exercises);
+        return view('operations', ['exercises' => $exercises]);
     }
 
     public function printExercises()
