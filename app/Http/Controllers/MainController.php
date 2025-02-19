@@ -78,21 +78,44 @@ class MainController extends Controller
         echo '<h1>Exercícios de Matemática </h1> (' . env('APP_NAME') . ')</h1>';
 
         foreach ($exercises as $exercise) {
-            echo '<h2><small>' . str_pad($exercise['exercise_number'], 2, "0", STR_PAD_LEFT) . ' » </small>' . $exercise['exercise'] . '</h2>';
+            echo '<h2><small>' . $exercise['exercise_number'] . ' » </small>' . $exercise['exercise'] . '</h2>';
         }
 
         // solution
         echo '<hr>';
         echo '<small> Soluções </small><br>';
         foreach ($exercises as $exercise) {
-            echo '<small>' . str_pad($exercise['exercise_number'], 2, "0", STR_PAD_LEFT) . ' » ' . $exercise['solution'] . '</small><br>';
+            echo '<small>' . $exercise['exercise_number'] . ' » ' . $exercise['solution'] . '</small><br>';
         }
     }
 
     public function exportExercises()
     {
-        echo "Export Exercises";
+        // check if exercises are in session
+        if (!session()->has('exercises')) {
+            return redirect()->route('home');
+        }
+
+        // create file to download exercises
+        $exercises = session('exercises');
+        $filename = 'exercises_' . env('APP_NAME') . '_' . date('YmdHis') . '.txt';
+
+        $content = 'Exercícios de Matemática (' . env('APP_NAME') . ')' . "\n\n";
+        foreach ($exercises as $exercise) {
+            $content .= $exercise['exercise_number'] . ' > ' . $exercise['exercise'] . "\n";
+        }
+
+        //solutions
+        $content .= "\nSoluções\n" . str_repeat('-', 20) . "\n";
+        foreach ($exercises as $exercise) {
+            $content .= $exercise['exercise_number'] . ' > ' . $exercise['solution'] . "\n";
+        }
+
+        return response($content)
+            ->header('Content-Type', 'text/plain')
+            ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
     }
+
     private function generateExercise($index, $operations, $min, $max): array
     {
         $operation = $operations[array_rand($operations)];
@@ -133,7 +156,7 @@ class MainController extends Controller
 
         return $exercises[] = [
             'operation' => $operation,
-            'exercise_number' => $index,
+            'exercise_number' => str_pad($index, 2, "0", STR_PAD_LEFT),
             'exercise' => $exercise,
             'solution' => "$exercise $solution"
         ];
