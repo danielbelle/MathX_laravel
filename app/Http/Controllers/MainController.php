@@ -24,8 +24,8 @@ class MainController extends Controller
 
             'check_division' => 'required_without_all::check_sum,check_subtraction,check_multiplication',
 
-            'number_one' => 'required|integer|min:1|max:999|lt:number_two',
-            'number_two' => 'required|integer|min:1|max:999',
+            'number_one' => 'required|integer|min:0|max:999|lt:number_two',
+            'number_two' => 'required|integer|min:0|max:999',
             'number_exercises' => 'required|integer|min:5|max:50',
 
 
@@ -33,10 +33,18 @@ class MainController extends Controller
 
         // get selected operations
         $operations = [];
-        $operations[] = $request->check_sum ? 'sum' : '';
-        $operations[] = $request->check_subtraction ? 'subtraction' : '';
-        $operations[] = $request->check_multiplication ? 'multiplication' : '';
-        $operations[] = $request->check_division ? 'division' : '';
+        if ($request->check_sum) {
+            $operations[] = 'sum';
+        };
+        if ($request->check_subtraction) {
+            $operations[] = 'subtraction';
+        };
+        if ($request->check_multiplication) {
+            $operations[] = 'multiplication';
+        };
+        if ($request->check_division) {
+            $operations[] = 'division';
+        };
 
         // get number (min and max)
         $min = $request->number_one;
@@ -65,13 +73,23 @@ class MainController extends Controller
                     $solution = $number1 - $number2;
                     break;
                 case 'multiplication':
-                    $exercise = "$number1 * $number2 = ";
+                    $exercise = "$number1 x $number2 = ";
                     $solution = $number1 * $number2;
                     break;
                 case 'division':
-                    $exercise = "$number1 / $number2 = ";
+
+                    // if number2 is 0, set it to 1
+                    if ($number2 == 0) {
+                        $number2 = 1;
+                    }
+                    $exercise = "$number1 ÷ $number2 = ";
                     $solution = $number1 / $number2;
                     break;
+            }
+
+            // if solution is float, round it to 2 decimal places
+            if (is_float($solution)) {
+                $solution = round($solution, 2);
             }
 
             $exercises[] = [
